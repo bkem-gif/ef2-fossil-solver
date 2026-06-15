@@ -22,9 +22,9 @@ SOFTWARE.
 
 ---
 
-This license covers the original solver code in this repository. It does NOT
-cover the files under `runtime-hook/`, which are derived from the third-party
-EF2 Browser Runtime and are included with that project's author's permission;
-those files remain subject to the EF2 Browser Runtime project's terms. Endless
-Frontier 2 game content, data, assets, and trademarks belong to their publisher
-and are not covered or redistributed here.
+This MIT license covers all original code in this repository, including
+`runtime-hook/solver_hook.py` (an original module that plugs into the third-party
+EF2 Browser Runtime). This repository does not include or redistribute the EF2
+Browser Runtime itself — you obtain it separately and use it under its author's
+terms. Endless Frontier 2 game content, data, assets, and trademarks belong to
+their publisher and are not covered or redistributed here.

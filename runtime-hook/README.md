@@ -1,36 +1,64 @@
 # Runtime hook — read-only board observer
 
-These two files are from the **EF2 Browser Runtime** (the third-party runtime that runs the
-game in a browser), with a small **read-only** observer added so the EF2 Fossil Solver can read
-the exact mine board. They are included **with the runtime author's permission** and remain
-subject to that project's terms.
+`solver_hook.py` is a small, self-contained module that adds a **read-only** observer to the
+EF2 Browser Runtime so the solver can read the exact mine board. It's original code (MIT — see
+the repo `LICENSE`) that plugs into the runtime; this folder ships **none of the runtime's own
+files**, so you wire it in rather than overwriting anything.
 
 ## What it does
 
 - Injects a passive hook into the runtime's **bootstrap page** (never the game bundle, so the
   bundle integrity check is untouched). The hook wraps `JSON.parse` and, whenever the game parses
-  a decrypted mine response, forwards a copy of the board (HP grid) and fossil geometry (shapes +
-  cell coordinates) to two local endpoints. It never decrypts anything itself, never modifies the
-  parsed result, and never sends a game action.
-- Adds `GET /solver/board` and `GET /solver/fossils`, the internal POST sinks the hook writes to,
-  and a read-only observed-swing counter (counts board progressions; no native counter exists).
+  a decrypted mine response, mirrors the board (HP grid) + fossil geometry (shapes + cell
+  coordinates) to two local endpoints — and exposes them in-page on `window.__EF2_SOLVER_DATA__`.
+  It never decrypts anything itself, never modifies the parsed result, and never sends a game action.
+- Adds `GET /solver/board` and `GET /solver/fossils`, the POST sinks the hook writes to, and a
+  read-only observed-swing counter. All of that state lives inside the module.
 
 ## Install
 
-Copy `handler.py` and `state.py` into your runtime's `scripts/runtime_server/`, replacing the
-originals, then restart the runtime. The solver then reads `http://localhost:8080/endlessfrontier2/solver/board`.
+1. **Drop in the module.** Copy `solver_hook.py` into your runtime's `scripts/runtime_server/`.
 
-## If your runtime version differs
+2. **Wire it into `scripts/runtime_server/handler.py`** with an import + three one-line dispatch
+   calls (the module owns all its own state, so nothing else changes):
 
-If these files don't match your runtime's version, **don't overwrite** — port the additions
-instead. They are grouped and commented:
+   ```python
+   # with the other "from . import ..." relative imports:
+   from . import solver_hook
+   ```
+   ```python
+   # as the FIRST statement inside do_GET(self):
+   if solver_hook.handle_get(self):
+       return
+   ```
+   ```python
+   # as the FIRST statement inside do_POST(self):
+   if solver_hook.handle_post(self):
+       return
+   ```
+   ```python
+   # in the method that serves the bootstrap index — where it does
+   #   html = (WEB_ROOT / "index.html").read_text(...)
+   # and returns it — add one line before the HTML is encoded/sent:
+   html = solver_hook.inject(html)
+   ```
 
-- **`handler.py`** — the `SOLVER_*` constants and injected `SOLVER_HOOK_SCRIPT`; the
-  `_inject_solver_hook`, `_solver_route`, `_fossil_sig`, `_handle_solver_post`, and
-  `_handle_solver_get` methods; and the three call sites that dispatch them (in the GET handler,
-  the POST handler, and where the bootstrap HTML is served).
-- **`state.py`** — the `LATEST_BOARD` / `LATEST_BOARD_TS` / `FOSSILS` / `LAST_MINE_ID` /
-  `MINE_SWINGS` / `LAST_BOARD_HP` block.
+3. **Restart the runtime.** The solver then reads `http://localhost:8080/endlessfrontier2/solver/board`.
 
-Everything the hook adds is read-only: it observes the game's own decrypted output and exposes it
-locally. It does not change game behavior or send actions.
+## What the module expects from the runtime
+
+`solver_hook.py` uses three things the EF2 Browser Runtime already provides:
+
+- `config.APP_BASE_PATH` — the app's base path (e.g. `/endlessfrontier2`),
+- `static_files.normalize_app_path` — strips that base path from a request path,
+- the handler's `_write_response(status, payload, headers=...)` — used to send the JSON responses.
+
+If a future runtime version renames these, point the module's imports / its `_write_response`
+calls at the equivalents.
+
+## Read-only, by design
+
+Everything the hook adds observes the game's own already-decrypted output and exposes it locally.
+It does not decrypt the protocol itself, change game behaviour, or send actions. It plugs into the
+**EF2 Browser Runtime by Rokhan** (<https://github.com/Rokhanhh/EF2-Browser-Runtime>), which you
+obtain and run separately.

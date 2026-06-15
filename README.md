@@ -13,10 +13,11 @@ runtime, so HP and fossil shapes are exact. It is **read-only**: it never sends 
 
 ## Setup
 
-1. **Add the read-only hook to your runtime.** Copy the two files in [`runtime-hook/`](runtime-hook/)
-   into your runtime's `scripts/runtime_server/` (replacing the originals) and restart the runtime.
-   That exposes the read-only `/solver/board` and `/solver/fossils` endpoints this tool reads —
-   details and a porting note are in [`runtime-hook/README.md`](runtime-hook/README.md).
+1. **Add the read-only hook to your runtime.** Drop [`runtime-hook/solver_hook.py`](runtime-hook/solver_hook.py)
+   into your runtime's `scripts/runtime_server/` and wire it into `handler.py` with three one-line calls
+   (no existing files are overwritten), then restart the runtime. That exposes the read-only
+   `/solver/board` and `/solver/fossils` endpoints this tool reads — exact steps are in
+   [`runtime-hook/README.md`](runtime-hook/README.md).
 2. **Start the runtime** and open the **Fossil Excavation** minigame.
 3. **Launch the solver.** It serves over `http://localhost:8770` so it can read the runtime:
 
@@ -72,15 +73,15 @@ The mechanics it models:
 | `bench.js` | dev-only Monte-Carlo benchmark (`node bench.js`) |
 | `BENCHMARKING.md` | benchmarking & heuristics reference |
 | `gapfind.js` / `gapfind2.js` | dev-only gap-finders — confirm no exploitable move-choice slack remains (see `BENCHMARKING.md`) |
-| `runtime-hook/` | the read-only runtime hook + install notes |
+| `runtime-hook/` | `solver_hook.py` (the read-only observer module) + how to wire it into your runtime |
 
 ## Attribution & legal
 
-- **EF2 Browser Runtime** — the third-party runtime this plugs into is by **Rokhan**
-  (<https://github.com/Rokhanhh/EF2-Browser-Runtime>). The files under `runtime-hook/` are that
-  project's `handler.py` / `state.py` with a read-only observer added, included **with Rokhan's
-  permission**. The runtime ships under no open-source license, so those files remain © Rokhan and
-  are used here by permission only — they are **not** covered by this repo's MIT license.
+- **EF2 Browser Runtime** — this tool plugs into the third-party runtime by **Rokhan**
+  (<https://github.com/Rokhanhh/EF2-Browser-Runtime>), which you obtain separately.
+  `runtime-hook/solver_hook.py` is an **original module** (written here, MIT-licensed) that you drop
+  into that runtime and wire in — this repo ships **none of the runtime's own files**. Use the
+  runtime itself under its author's terms.
 - **Game content** — *Endless Frontier 2*, its data, assets, and trademarks belong to the publisher.
   This tool reads only the board already on your screen — it bundles no game assets and decrypts
   nothing itself. For personal play; don't use it to redistribute the publisher's content or in
@@ -88,5 +89,6 @@ The mechanics it models:
 
 ## License
 
-[MIT](LICENSE) — covers the solver code in this repo. The `runtime-hook/` files are covered by the
-EF2 Browser Runtime project's terms instead (see above).
+[MIT](LICENSE) — covers everything in this repo, including `runtime-hook/solver_hook.py` (an original
+module). It does not include the EF2 Browser Runtime itself, which you obtain separately and use under
+its author's terms (see above).
