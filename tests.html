@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fossil solver — engine tests</title>
+<style>
+  body { font: 14px/1.6 -apple-system, system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; color: #222; }
+  h1 { font-size: 20px; }
+  .row { padding: 6px 10px; border-radius: 6px; margin: 4px 0; }
+  .pass { background: #e7f6ec; color: #14622f; }
+  .fail { background: #fbe7e7; color: #8a1f1f; font-weight: 600; }
+  #summary { font-size: 18px; font-weight: 700; margin: 14px 0; }
+  code { background: #f0efe8; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Fossil solver — engine tests</h1>
+<div id="summary">running…</div>
+<div id="out"></div>
+
+<script src="solver.js"></script>
+<script>
+(function () {
+  var out = document.getElementById('out');
+  var pass = 0, fail = 0;
+  function ok(name, cond, got) {
+    var div = document.createElement('div');
+    div.className = 'row ' + (cond ? 'pass' : 'fail');
+    div.textContent = (cond ? 'PASS  ' : 'FAIL  ') + name + (cond ? '' : '   (got: ' + JSON.stringify(got) + ')');
+    out.appendChild(div);
+    if (cond) { pass++; console.log('PASS', name); } else { fail++; console.error('FAIL', name, 'got', got); }
+  }
+
+  // --- damage model ---
+  var b = FS.makeBoard(5, 5, 4);
+  var sim = FS.simulateHit(b, 2, 2);
+  ok('center hit touches 5 cells', sim.touched.length === 5, sim.touched.length);
+  ok('center hit breaks nothing at hp4', sim.breaks.length === 0, sim.breaks.length);
+  var simEdge = FS.simulateHit(b, 0, 0);
+  ok('corner hit touches 3 cells', simEdge.touched.length === 3, simEdge.touched.length);
+
+  // apply accumulates and breaks
+  var b2 = FS.makeBoard(3, 3, 4);
+  FS.applyHit(b2, 1, 1);
+  var res = FS.applyHit(b2, 1, 1);
+  ok('two center hits break the center (4 dmg >= hp4)', res.breaks.length >= 1 && res.breaks[0][0] === 1 && res.breaks[0][1] === 1, res.breaks);
+
+  // --- candidate placements ---
+  var p = FS.candidatePlacements(FS.makeBoard(5, 5, 4));
+  // h4: 5*(5-3)=10, v4: 10, sq: 4*4=16 => 36
+  ok('placements on 5x5 = 36', p.length === 36, p.length);
+
+  // weights highest in the interior
+  var w = FS.cellWeights(FS.makeBoard(5, 5, 4), p);
+  ok('interior weight > corner weight', w[2][2] > w[0][0], { center: w[2][2], corner: w[0][0] });
+
+  // --- footprint inference ---
+  var fb = FS.makeBoard(5, 5, 4);
+  ok('one fossil cell -> 3 candidate footprints', FS.fossilFootprints(fb, [[0, 0]]).length === 3, FS.fossilFootprints(fb, [[0, 0]]).length);
+  ok('two in a row -> 2 candidates (h4 + 2x2)', FS.fossilFootprints(fb, [[0, 0], [0, 1]]).length === 2, FS.fossilFootprints(fb, [[0, 0], [0, 1]]).length);
+  ok('three in a row -> 1 candidate (h4 determined)', FS.fossilFootprints(fb, [[0, 0], [0, 1], [0, 2]]).length === 1, FS.fossilFootprints(fb, [[0, 0], [0, 1], [0, 2]]).length);
+
+  // footprint impossible once a needed cell is dug empty
+  var fb2 = FS.makeBoard(5, 5, 4);
+  fb2.cells[1][1].state = 'empty';
+  // cells [0,0],[0,1] can only be h4 now (2x2 needs [1,1])
+  ok('digging a cell kills the 2x2 footprint', FS.fossilFootprints(fb2, [[0, 0], [0, 1]]).length === 1, FS.fossilFootprints(fb2, [[0, 0], [0, 1]]).length);
+
+  // --- completion plan minimality ---
+  var cb = FS.makeBoard(4, 4, 4);
+  var plan = FS.completionPlan(cb, [[0, 0], [0, 1], [1, 0], [1, 1]]);
+  ok('2x2 of hp4 needs exactly 4 swings', plan.hits.length === 4, plan.hits.length);
+
+  var cb2 = FS.makeBoard(4, 4, 3);
+  var plan2 = FS.completionPlan(cb2, [[0, 0], [0, 1], [0, 2], [0, 3]]);
+  // 1x4 of hp3: hitting the two inner cells twice each = 4 swings clears all (ends get 2+2, inners 2+2... check >=3)
+  ok('1x4 of hp3 clears in <= 4 swings', plan2.hits.length <= 4 && plan2.hits.length >= 2, plan2.hits.length);
+
+  // partially damaged target costs fewer swings
+  var cb3 = FS.makeBoard(3, 3, 4);
+  cb3.cells[0][0].dmg = 3; // needs 1 more
+  var plan3 = FS.completionPlan(cb3, [[0, 0]]);
+  ok('single near-dead cell -> 1 swing', plan3.hits.length === 1, plan3.hits.length);
+
+  // --- recommend ---
+  var rb = FS.makeBoard(10, 8, 4);
+  var rec = FS.recommend(rb, [], 5);
+  ok('fresh board -> explore mode', rec.mode === 'explore', rec.mode);
+  ok('recommends a covered cell', rec.hit && FS.isCovered(rb, rec.hit[0], rec.hit[1]), rec.hit);
+
+  // completion takes priority and finishes a known footprint
+  var rb2 = FS.makeBoard(6, 6, 2);
+  rb2.cells[0][0].state = 'fossil'; rb2.cells[0][0].fossil = 'A';
+  // footprint h4 across row 0, first cell already revealed
+  var fossils = [{ id: 'A', color: 'green', cells: [[0, 0]], footprint: { shape: 'h4', cells: [[0, 0], [0, 1], [0, 2], [0, 3]] }, complete: false }];
+  var rec2 = FS.recommend(rb2, fossils, 5);
+  ok('known footprint -> complete mode', rec2.mode === 'complete', rec2.mode);
+  ok('completion hit is inside/adjacent to the footprint', rec2.hit && rec2.hit[0] <= 1, rec2.hit);
+
+  // done detection
+  var recDone = FS.recommend(FS.makeBoard(4, 4, 4), [{ id: 'A', complete: true }], 1);
+  ok('target reached -> done', recDone.mode === 'done', recDone.mode);
+
+  var s = document.getElementById('summary');
+  s.textContent = (fail === 0 ? '✅ ' : '❌ ') + pass + ' passed, ' + fail + ' failed';
+  s.style.color = fail === 0 ? '#14622f' : '#8a1f1f';
+  console.log('SUMMARY', pass + ' passed, ' + fail + ' failed');
+  window.__testResult = { pass: pass, fail: fail };
+})();
+</script>
+</body>
+</html>
