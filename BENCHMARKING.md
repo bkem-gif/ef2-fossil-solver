@@ -5,13 +5,14 @@ Excavation solver. It documents what the benchmark optimises, how the harness
 works, the production decision flow, the heuristics that win, and the knobs
 available for further exploration.
 
-All work happens in two files:
+All work happens in a few files:
 
 | File | Role |
 |------|------|
 | `solver.js` | Pure engine. Damage model, placement enumeration, the completion planner, and `recommend()` (the production policy). No DOM, no network. |
 | `bench.js`  | Dev-only Monte-Carlo harness. Plays full games against hidden fossils and reports hammers-to-clear. Node only. |
 | `metrics.js` | Field metrics. Turns a live board snapshot into the same numbers (swings, empties, fossils) and compares a real game against the baselines below, live in the solver UI ("Field metrics vs benchmark"). |
+| `gapfind.js` / `gapfind2.js` | Dev-only gap-finders — at every position they try every move and measure how much the best swap would save: vs the planted truth (`gapfind`) or, with luck removed, vs the resampled posterior (`gapfind2`). Used to confirm no exploitable slack remains. Node only. |
 
 ---
 
@@ -151,10 +152,18 @@ once — strictly ≤ the per-fossil cost.
 
 ## 4. The winning heuristics
 
-### Completion: joint minimum-swing planning
+### Completion: joint minimum-swing planning, with a probe-aware finishing blow
 Greedy upper bound, then branch-and-bound for the true minimum, with the
-`⌈need/6⌉` admissible lower bound for pruning. This path is already within a
-swing or two of the oracle — completion is *not* where the swings are lost.
+`⌈need/6⌉` admissible lower bound for pruning. Completion isn't where the *bulk* of
+swings are lost — but it isn't free of slack either. Among the hits that finish the
+known fossils in the **same** minimal number of swings, `bestCompletionHit` picks
+the one whose +1 splash also breaks the highest-likelihood covered tile — a *free*
+probe for the next fossil. (Landing the finishing blow from a promising neighbour
+reveals a tile and avoids the overkill of hitting a 1-HP fossil cell directly.)
+Swing-neutral by construction — it rejects any candidate that would add a completion
+swing — yet worth **≈0.9 swings (~2.5–3%)** on every board (8×10 HP[3,4]: 36.7 →
+35.8). The telltale "more empties broken, *fewer* swings" confirms the probe is
+genuinely free: the finishing swing was already spent.
 
 ### Exploration: marginal-likelihood probing, no break-rush
 1. **Where could a fossil still be?** Enumerate every shape placement that fits
@@ -227,7 +236,8 @@ Useful engine primitives (all on the `FS` export): `isCovered`, `simulateHit`,
 
 | Policy (8×10 HP[3,4] K5) | mean swings | empties broken |
 |--------------------------|:-----------:|:--------------:|
-| **Production `recommend`** | **36.7** | 21.7 |
+| **Production `recommend`** | **35.8** | 22.3 |
+| ↳ without the completion-probe tie-break | 36.7 | 21.7 |
 | Reward immediate breaks (`wImm=1000`) | 41.3 | 25.8 |
 | Add concentration bonus (`wAdj=5`) | 40.2 | 28.5 |
 | Interleave find+finish (`compAsWeight`) | 47.5 | 32.2 |
@@ -240,13 +250,13 @@ All three scenarios, production policy vs oracle:
 
 | Scenario | production mean | oracle mean |
 |----------|:---------------:|:-----------:|
-| `8x10 hp[3,4] K5`   | 36.7 | 21.5 |
-| `8x10 hp[2,3,4] K5` | 30.3 | 19.2 |
-| `6x6 hp[1,2,3] K3`  | 10.5 | 8.0 |
+| `8x10 hp[3,4] K5`   | 35.8 | 21.5 |
+| `8x10 hp[2,3,4] K5` | 29.4 | 19.2 |
+| `6x6 hp[1,2,3] K3`  | 10.2 | 8.0 |
 
 ### How to read the gap
 The production policy and the oracle differ only in **knowledge of fossil
-positions**, so the gap (≈15 swings on the dense board) is the cost of *search*,
+positions**, so the gap (≈14 swings on the dense board) is the cost of *search*,
 not of *planning*. Two observations bound how much of that gap is recoverable:
 
 - A strictly better probability model (sample-posterior, drawing valid joint
@@ -262,3 +272,17 @@ shapes requires on the order of `log2(#legal layouts)` informative probes, and
 the probe already spends about that many. The lever for further gains is not a
 smarter scoring heuristic; it would have to be a different *information* model
 (e.g. exploiting structure the current placement enumeration ignores).
+
+### Confirming no slack is left (`gapfind`)
+To be sure the heuristic isn't leaving easy swings on the table, `gapfind.js` plays
+many simulated games and, at every position, tries **every** covered tile as the next
+move, plays the rest out, and measures how much the best single swap would have saved
+— a 1-ply regret. Against the *planted* truth that regret is dominated by luck
+(swapping onto a tile that happened to hide a fossil — irreducible). `gapfind2.js`
+removes the luck by averaging each candidate over many **resampled** layouts
+consistent with what's revealed (the solver's posterior). There the residual regret
+collapses as samples rise (summed regret 45 → 13 going from 12 to 40 samples per
+candidate) — the signature of the *optimizer's curse* (the minimum of noisy estimates
+is biased low), not a real gap. Conclusion: after the completion-probe tie-break,
+**no systematic, config-robust improvement remains** — what's left is the information
+floor above.

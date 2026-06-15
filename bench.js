@@ -281,12 +281,13 @@ const scenarios = [
 // Explorer experiment log (8x10 HP[3,4] K5, mean swings; oracle floor = 21.5):
 //   old break-rush (immediate*1000) ... 41.3   <- the bug we fixed
 //   SHIPPED: no break-rush marginal .. 36.7   <- adopted
+//   + completion-probe tie-break .... 35.8   <- shipped (free probe on the finishing blow; bestCompletionHit)
 //   forced-cell deduction ............ 36.7   tied (forced tiles already carry max marginal weight)
 //   commit-to-densest placement ...... 38.2   worse (wastes swings when the guess isn't a fossil)
 //   sample-posterior weights ......... ~36.9  tied with cheap count weights (no gain)
 //   concentration / splash bonus ..... 40.2   worse (clustering breaks more junk)
 //   interleave explore+complete ...... 47.5   worse (refuted the co-optimize hypothesis)
-// Takeaway: the marginal probe is at the practical floor. The 36.7->21.5 gap to the
+// Takeaway: the marginal probe is at the practical floor. The 35.8->21.5 gap to the
 // positions-known oracle is the irreducible cost of not knowing where fossils are
 // (~log2(#legal layouts) informative probes), not algorithmic slack.
 const variants = [

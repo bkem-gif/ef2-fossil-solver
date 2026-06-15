@@ -250,6 +250,54 @@
     return { covered: covered, empty: empty, fossil: fossil };
   }
 
+  // Deep-copy a board so a hit can be simulated without mutating the original.
+  function cloneBoard(b) {
+    var cells = [];
+    for (var r = 0; r < b.rows; r++) {
+      var row = [];
+      for (var c = 0; c < b.cols; c++) { var x = b.cells[r][c]; row.push({ state: x.state, hp: x.hp, dmg: x.dmg, fossil: x.fossil }); }
+      cells.push(row);
+    }
+    return { rows: b.rows, cols: b.cols, cells: cells };
+  }
+
+  // Among the hits that finish the known fossils in the SAME minimal number of
+  // swings (K), prefer the one whose +1 splash also probes the most promising
+  // covered cells — a free look at where the next fossil might be. Hitting the
+  // fossil cell directly often wastes the splash (and overkills); landing the
+  // finishing blow from a high-likelihood neighbour reveals a tile for free.
+  // Returns null if nothing beats the planner's own first hit. Never adds a swing.
+  function bestCompletionHit(b, targets, K) {
+    var w = cellWeights(b, candidatePlacements(b));
+    var cand = {};
+    function add(r, c) { if (isCovered(b, r, c)) cand[r + ',' + c] = [r, c]; }
+    for (var t = 0; t < targets.length; t++) {
+      add(targets[t][0], targets[t][1]);
+      var ns = orthoNeighbors(b, targets[t][0], targets[t][1]);
+      for (var n = 0; n < ns.length; n++) add(ns[n][0], ns[n][1]);
+    }
+    var best = null, bestScore = -Infinity;
+    for (var key in cand) {
+      var r = cand[key][0], c = cand[key][1];
+      // reject any hit that would push completion past K total swings
+      var copy = cloneBoard(b);
+      applyHit(copy, r, c);
+      var rem = [];
+      for (var ti = 0; ti < targets.length; ti++) if (isCovered(copy, targets[ti][0], targets[ti][1])) rem.push(targets[ti]);
+      if (1 + (rem.length ? completionPlan(copy, rem).hits.length : 0) > K) continue;
+      // score the free exploration: likelihood-weighted progress minus overkill
+      var sim = simulateHit(b, r, c), prog = 0, waste = 0;
+      for (var s = 0; s < sim.touched.length; s++) {
+        var cell = sim.touched[s], wt = w[cell.r][cell.c];
+        if (cell.breaks) waste += Math.max(0, cell.newDmg - cell.hp);
+        prog += wt * (Math.min(cell.dealt, cell.need) / Math.max(1, cell.need));
+      }
+      var score = prog - waste * 2;
+      if (score > bestScore) { bestScore = score; best = [r, c]; }
+    }
+    return best;
+  }
+
   /*
    * recommend(board, fossils, target) -> next best swing.
    *   fossils: [{ id, color, cells:[[r,c]...], footprint:{shape,cells}|null, complete:bool }]
@@ -279,9 +327,10 @@
     if (jointTargets.length) {
       var plan = completionPlan(b, jointTargets).hits;
       if (plan.length) {
+        var bestHit = bestCompletionHit(b, jointTargets, plan.length) || plan[0];
         return {
           mode: 'complete',
-          hit: plan[0],
+          hit: bestHit,
           fossilId: knownFossils.length === 1 ? knownFossils[0].id : null,
           plan: plan,
           reason: 'Clear ' + knownFossils.length + ' known fossil' + (knownFossils.length > 1 ? 's' : '') +

@@ -71,6 +71,7 @@ The mechanics it models:
 | `tests.html` | open in a browser to run the engine unit tests |
 | `bench.js` | dev-only Monte-Carlo benchmark (`node bench.js`) |
 | `BENCHMARKING.md` | benchmarking & heuristics reference |
+| `gapfind.js` / `gapfind2.js` | dev-only gap-finders — confirm no exploitable move-choice slack remains (see `BENCHMARKING.md`) |
 | `runtime-hook/` | the read-only runtime hook + install notes |
 
 ## Attribution & legal
