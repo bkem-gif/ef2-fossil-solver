@@ -45,6 +45,16 @@ files**, so you wire it in rather than overwriting anything.
 
 3. **Restart the runtime.** The solver then reads `http://localhost:8080/endlessfrontier2/solver/board`.
 
+## Verify (optional)
+
+`solver_hook.test.js` drives the module's injected JS through synthetic mine responses (Node, no
+browser needed) — including the mine-boundary case where a fresh mine must drop the previous mine's
+fossils, so the solver keeps suggesting moves after one completes:
+
+```sh
+node solver_hook.test.js     # exits non-zero on failure
+```
+
 ## What the module expects from the runtime
 
 `solver_hook.py` uses three things the EF2 Browser Runtime already provides:
