@@ -46,7 +46,7 @@ _HOOK_SCRIPT = """
   if (window.__EF2_SOLVER_HOOK__) return;
   window.__EF2_SOLVER_HOOK__ = true;
   var BOARD_URL = "__SOLVER_BOARD_URL__", FOSSILS_URL = "__SOLVER_FOSSILS_URL__";
-  var origParse = JSON.parse, origStringify = JSON.stringify, lastBoard = "", lastFos = "";
+  var origParse = JSON.parse, origStringify = JSON.stringify, lastBoard = "", lastFos = "", lastMineId = null;
   function is2dNum(a) { return Array.isArray(a) && Array.isArray(a[0]) && typeof a[0][0] === "number"; }
   // recurse into any nested wrapper object (not arrays), so wrapper-key naming
   // (result/data/res/…) doesn't matter.
@@ -70,10 +70,12 @@ _HOOK_SCRIPT = """
     var r = origParse(text, reviver);
     try {
       // board (HP grid) and fossils (coordinates) are INDEPENDENT — a doDamage
-      // carries both, and a getStatus refetch must not clobber the fossils.
+      // carries both, and a same-mine refetch must not clobber the fossils; but a
+      // NEW mine (changed board id) must drop the previous mine's revealed fossils,
+      // else a freshly-loaded mine looks "already complete" and no move is suggested.
       var changed = false;
       var b = findBoard(r, 0);
-      if (b) { var s = origStringify(b); if (s !== lastBoard) { lastBoard = s; pageData().board = b; changed = true; send(BOARD_URL, s); try { console.log("[EF2 hook] board:", Object.keys(b).join(",")); } catch (e) {} } }
+      if (b) { var s = origStringify(b); if (s !== lastBoard) { lastBoard = s; if (b.id !== lastMineId) { lastMineId = b.id; pageData().fossils = []; lastFos = ""; } pageData().board = b; changed = true; send(BOARD_URL, s); try { console.log("[EF2 hook] board:", Object.keys(b).join(",")); } catch (e) {} } }
       var chests = collectChests(r, 0, []);
       if (chests.length) { var d = origStringify(chests); if (d !== lastFos) { lastFos = d; pageData().fossils = chests; changed = true; send(FOSSILS_URL, d); try { console.log("[EF2 hook] fossils:", chests.length); } catch (e) {} } }
       // Also expose the latest data in-page (window.__EF2_SOLVER_DATA__) + fire an event,
