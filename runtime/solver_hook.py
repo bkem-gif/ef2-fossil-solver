@@ -80,7 +80,7 @@ _HOOK_SCRIPT = """
       if (chests.length) { var d = origStringify(chests); if (d !== lastFos) { lastFos = d; pageData().fossils = chests; changed = true; send(FOSSILS_URL, d); try { console.log("[EF2 hook] fossils:", chests.length); } catch (e) {} } }
       // Also expose the latest data in-page (window.__EF2_SOLVER_DATA__) + fire an event,
       // so a same-page overlay can read it with no HTTP round-trip. The endpoints above
-      // still work unchanged for external consumers (e.g. the standalone solver page).
+      // still work unchanged for any external consumer that GETs /solver/board or /solver/fossils.
       if (changed) { pageData().ts = Date.now(); try { window.dispatchEvent(new CustomEvent("ef-solver-update")); } catch (e) {} }
     } catch (e) {}
     return r;

@@ -1,62 +1,60 @@
 # EF2 Fossil Solver
 
-An offline helper that reads the **exact** board from a running *Endless Frontier 2*
-**Fossil Excavation** minigame and shows the **fewest-swing** way to uncover every fossil.
-No build step, no AI, no pixel-guessing — it reads the game's own decrypted state through the
-runtime, so HP and fossil shapes are exact. It is **read-only**: it never sends a move to the game.
+A read-only, in-game **overlay** for the EF2 Browser Runtime that solves the *Endless Frontier 2*
+**Fossil Excavation** minigame — it shows the **fewest-swing** way to uncover every fossil **right on
+the game page**, updating as you play. No build step, no second server, no AI or pixel-guessing: it
+reads the game's own decrypted board in-page, so HP and fossil shapes are exact. It is **read-only** —
+it never sends a move to the game.
 
-> **Can't install or run it?** [**SOLVE-BY-HAND.md**](SOLVE-BY-HAND.md) distills the same strategy into a
-> by-eye method you can apply to your own board — illustrated, with worked example boards.
+> **Can't install it (no runtime, or you'd rather not touch code)?** [**SOLVE-BY-HAND.md**](SOLVE-BY-HAND.md)
+> distills the same strategy into a by-eye method you can apply to your own board — illustrated, with
+> worked example boards.
 
 ## Requirements
 
-- A working **EF2 Browser Runtime** install — the separate, third-party project that runs the
-  game in a desktop browser (see [Attribution](#attribution--legal)).
-- **Python 3.10+** — serves this folder, and is what the runtime uses.
+- A working **EF2 Browser Runtime** install — the separate, third-party project that runs the game in
+  a desktop browser (see [Attribution](#attribution--legal)).
+- **Python 3.10+** — the runtime's own language; you drop two small modules into it.
 
 ## Setup
 
-1. **Add the read-only hook to your runtime.** Drop [`runtime-hook/solver_hook.py`](runtime-hook/solver_hook.py)
-   into your runtime's `scripts/runtime_server/` and wire it into `handler.py` with three one-line calls
-   (no existing files are overwritten), then restart the runtime. That exposes the read-only
-   `/solver/board` and `/solver/fossils` endpoints this tool reads — exact steps are in
-   [`runtime-hook/README.md`](runtime-hook/README.md).
-2. **Start the runtime** and open the **Fossil Excavation** minigame.
-3. **Launch the solver.** It serves over `http://localhost:8770` so it can read the runtime:
+The solver runs **inside** the runtime — there's no separate server to start. You wire it in once:
 
-   | Platform | Launcher |
-   |----------|----------|
-   | Windows  | double-click `launch.bat` |
-   | macOS    | double-click `launch.command` |
-   | Linux    | run `./launch.sh` |
-
-   …or just run `python -m http.server 8770` here (`python3` on macOS/Linux) and open
-   `http://localhost:8770/`.
+1. **Add the overlay to your runtime.** Copy this repo's two modules (`solver_hook.py`,
+   `solver_overlay.py`) and three web assets (`solver.js`, `metrics.js`, `overlay.js`) into your
+   runtime, and add a few one-line calls to `handler.py`. Full copy-paste steps are in
+   [`runtime/README.md`](runtime/README.md) — no existing runtime files are overwritten.
+2. **Restart the runtime**, then open the **Fossil Excavation** minigame.
+3. The **🦴 Fossil Solver** panel appears right on the game page.
 
 ## Using it
 
-1. **Hammer the glowing tile** the solver points to, in the game.
-2. The board re-reads itself; repeat until *All fossils uncovered*.
-
-Alongside the board and the next swing, it shows a **Fossils** list and a **Field metrics**
-panel — your swings and empty tiles broken vs the simulation benchmark (see
-[`BENCHMARKING.md`](BENCHMARKING.md)), with a scorecard when you finish a mine.
+A small **draggable panel** sits over the game. It draws a mini **board**, **highlights the next tile
+to hammer** (`🔨 R# · C#`), and shows a **Fossils: X / Y uncovered** count. Hammer the highlighted tile
+in the game; the panel re-reads the board and updates — repeat until **✓ All uncovered**. It also shows
+an **Empties** line — non-fossil tiles you've broken vs the simulation benchmark (see
+[`BENCHMARKING.md`](BENCHMARKING.md)). Drag the panel anywhere; `–` collapses it.
 
 ## How it works
 
-You play EF2 through the runtime. The hook injects a small **read-only observer** into the
-runtime's bootstrap page (never the game bundle, so its integrity check is untouched) that
-watches the game's own decrypted mine responses and forwards just the board (HP grid) and fossil
-geometry (shapes + cell coordinates) to a local endpoint. The solver polls that endpoint and
-renders the next best swing. It never decrypts anything itself — the game does — and never sends
-an action.
+You play EF2 through the runtime. Two small **read-only** pieces plug into it:
+
+- The **hook** (`solver_hook.py`) injects a passive observer into the runtime's bootstrap page (never
+  the game bundle, so its integrity check is untouched). It watches the game's own decrypted mine
+  responses and exposes the board (HP grid) + fossil geometry (shapes + cell coordinates) **in-page**
+  on `window.__EF2_SOLVER_DATA__` — and also mirrors them to read-only `/solver/board` and
+  `/solver/fossils` routes on the runtime's **existing** server (no new server or port). It never
+  decrypts anything itself — the game does — and never sends an action.
+- The **overlay** (`solver_overlay.py` + `overlay.js`) is the draggable panel injected onto the game
+  page. It reads that in-page data **directly — no network round-trip**, runs the solver engine, and
+  renders the fewest-swing next move right over the board.
 
 The mechanics it models:
 
 - Hitting a covered tile deals **+2** to it and **+1** to each orthogonally adjacent covered tile;
   damage accumulates and a tile breaks at 0 HP.
-- Fossils are rigid 4-cell shapes — **1×4**, **4×1**, **2×2** — and may touch. A fossil is
-  uncovered when all four of its tiles are broken.
+- Fossils are rigid 4-cell shapes — **1×4**, **4×1**, **2×2** — and may touch. A fossil is uncovered
+  when all four of its tiles are broken.
 - With a fossil's footprint known, the completion planner finds the minimum swings to clear its
   remaining tiles; while fossils are still hidden it probes the most-likely tiles. See
   [`BENCHMARKING.md`](BENCHMARKING.md) for the heuristics and how they were tuned.
@@ -65,27 +63,26 @@ The mechanics it models:
 
 | File | Purpose |
 |------|---------|
-| `index.html` | markup (mounts the reader) |
-| `styles.css` | styling |
 | `solver.js` | pure engine — damage model, placements, completion planner, recommender |
-| `live.js` | exact game-read view — polls the runtime endpoint, renders board + next swing |
+| `overlay.js` | the in-game overlay UI — reads the board in-page and draws the draggable next-swing panel |
 | `metrics.js` | field metrics — turns each snapshot into swings / empties / fossils, scored vs the benchmark |
-| `app.js` | boot — theme + mount |
-| `launch.bat` / `launch.command` / `launch.sh` | serve the solver on Windows / macOS / Linux |
+| `runtime/` | the two modules you wire into your runtime (`solver_hook.py` + `solver_overlay.py`) + how |
 | `tests.html` | open in a browser to run the engine unit tests |
 | `bench.js` | dev-only Monte-Carlo benchmark (`node bench.js`) |
+| `gapfind.js` / `gapfind2.js` | dev-only gap-finders — confirm no exploitable move-choice slack remains (see `BENCHMARKING.md`) |
 | `BENCHMARKING.md` | benchmarking & heuristics reference |
 | `SOLVE-BY-HAND.md` | play it by eye — the solver's strategy as an illustrated human field guide |
-| `gapfind.js` / `gapfind2.js` | dev-only gap-finders — confirm no exploitable move-choice slack remains (see `BENCHMARKING.md`) |
-| `runtime-hook/` | `solver_hook.py` (the read-only observer module) + how to wire it into your runtime |
+
+`solver.js`, `metrics.js`, and `overlay.js` double as the three web assets you copy into the runtime
+(see [`runtime/README.md`](runtime/README.md)) — one source of truth, no duplication.
 
 ## Attribution & legal
 
 - **EF2 Browser Runtime** — this tool plugs into the third-party runtime by **Rokhan**
-  (<https://github.com/Rokhanhh/EF2-Browser-Runtime>), which you obtain separately.
-  `runtime-hook/solver_hook.py` is an **original module** (written here, MIT-licensed) that you drop
-  into that runtime and wire in — this repo ships **none of the runtime's own files**. Use the
-  runtime itself under its author's terms.
+  (<https://github.com/Rokhanhh/EF2-Browser-Runtime>), which you obtain separately. The modules in
+  `runtime/` (`solver_hook.py`, `solver_overlay.py`) are **original code** (written here, MIT-licensed)
+  that you drop into that runtime and wire in — this repo ships **none of the runtime's own files**.
+  Use the runtime itself under its author's terms.
 - **Game content** — *Endless Frontier 2*, its data, assets, and trademarks belong to the publisher.
   This tool reads only the board already on your screen — it bundles no game assets and decrypts
   nothing itself. For personal play; don't use it to redistribute the publisher's content or in
@@ -93,6 +90,6 @@ The mechanics it models:
 
 ## License
 
-[MIT](LICENSE) — covers everything in this repo, including `runtime-hook/solver_hook.py` (an original
-module). It does not include the EF2 Browser Runtime itself, which you obtain separately and use under
-its author's terms (see above).
+[MIT](LICENSE) — covers everything in this repo, including the original modules in `runtime/`. It does
+not include the EF2 Browser Runtime itself, which you obtain separately and use under its author's
+terms (see above).
