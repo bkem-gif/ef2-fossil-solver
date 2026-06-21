@@ -1,0 +1,36 @@
+<svg viewBox="0 0 480 560" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <text x="240" y="46" text-anchor="middle" font-size="30" font-weight="700" fill="#3a2c12">A swing hits a plus shape</text>
+
+  <!-- corners: covered, untouched -->
+  <g>
+    <rect x="70"  y="92"  width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+    <rect x="306" y="92"  width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+    <rect x="70"  y="328" width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+    <rect x="306" y="328" width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+    <text x="122" y="156" text-anchor="middle" font-size="22" fill="#bcae93">0</text>
+    <text x="358" y="156" text-anchor="middle" font-size="22" fill="#bcae93">0</text>
+    <text x="122" y="392" text-anchor="middle" font-size="22" fill="#bcae93">0</text>
+    <text x="358" y="392" text-anchor="middle" font-size="22" fill="#bcae93">0</text>
+  </g>
+
+  <!-- arms: +1 -->
+  <rect x="188" y="92"  width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+  <text x="240" y="156" text-anchor="middle" font-size="34" font-weight="700" fill="#0c7b7b">+1</text>
+  <rect x="188" y="328" width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+  <text x="240" y="392" text-anchor="middle" font-size="34" font-weight="700" fill="#0c7b7b">+1</text>
+  <rect x="70"  y="210" width="104" height="104" rx="11" fill="#f4e3c4" stroke="#dcc7a0" stroke-width="2.5"/>
+  <text x="122" y="274" text-anchor="middle" font-size="34" font-weight="700" fill="#0c7b7b">+1</text>
+
+  <!-- right arm: a HOLE, splash wasted -->
+  <rect x="306" y="210" width="104" height="104" rx="11" fill="#dcd6c8" stroke="#bdb4a1" stroke-width="2.5" stroke-dasharray="6 5"/>
+  <text x="358" y="262" text-anchor="middle" font-size="30" font-weight="700" fill="#9a917f">✗</text>
+  <text x="358" y="290" text-anchor="middle" font-size="15" fill="#9a917f">wasted</text>
+
+  <!-- center: the tile you hit, +2 -->
+  <rect x="188" y="210" width="104" height="104" rx="11" fill="#f4e3c4" stroke="#e24b4a" stroke-width="5"/>
+  <text x="240" y="262" text-anchor="middle" font-size="40" font-weight="800" fill="#d63a39">+2</text>
+  <text x="240" y="292" text-anchor="middle" font-size="15" font-weight="600" fill="#b23735">you hit here</text>
+
+  <text x="240" y="480" text-anchor="middle" font-size="18" fill="#4a3c22">+2 to the tile you hit, +1 to each covered tile.</text>
+  <text x="240" y="508" text-anchor="middle" font-size="18" fill="#4a3c22">Holes, off-board splash, and diagonals: nothing.</text>
+</svg>

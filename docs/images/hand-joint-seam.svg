@@ -1,0 +1,35 @@
+<svg viewBox="0 0 640 470" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif">
+  <text x="40" y="46" font-size="27" font-weight="700" fill="#3a2c12">Two fossils touching? Work the seam</text>
+
+  <!-- legend -->
+  <rect x="436" y="58" width="20" height="20" rx="4" fill="#bfe08a" stroke="#8fb95f" stroke-width="2"/>
+  <text x="464" y="74" font-size="16" fill="#4a3c22">Fossil A</text>
+  <rect x="540" y="58" width="20" height="20" rx="4" fill="#aaccf2" stroke="#6f9fd6" stroke-width="2"/>
+  <text x="568" y="74" font-size="16" fill="#4a3c22">Fossil B</text>
+
+  <!-- top line: fossil A (green) -->
+  <rect x="140" y="150" width="84" height="84" rx="11" fill="#bfe08a" stroke="#8fb95f" stroke-width="2.5"/>
+  <rect x="232" y="150" width="84" height="84" rx="11" fill="#bfe08a" stroke="#e24b4a" stroke-width="5"/>
+  <rect x="324" y="150" width="84" height="84" rx="11" fill="#bfe08a" stroke="#8fb95f" stroke-width="2.5"/>
+  <rect x="416" y="150" width="84" height="84" rx="11" fill="#bfe08a" stroke="#8fb95f" stroke-width="2.5"/>
+  <!-- bottom line: fossil B (blue) -->
+  <rect x="140" y="242" width="84" height="84" rx="11" fill="#aaccf2" stroke="#6f9fd6" stroke-width="2.5"/>
+  <rect x="232" y="242" width="84" height="84" rx="11" fill="#aaccf2" stroke="#e24b4a" stroke-width="3.5" stroke-dasharray="7 5"/>
+  <rect x="324" y="242" width="84" height="84" rx="11" fill="#aaccf2" stroke="#6f9fd6" stroke-width="2.5"/>
+  <rect x="416" y="242" width="84" height="84" rx="11" fill="#aaccf2" stroke="#6f9fd6" stroke-width="2.5"/>
+
+  <!-- damage labels -->
+  <text x="274" y="186" text-anchor="middle" font-size="34" font-weight="800" fill="#d63a39">+2</text>
+  <text x="274" y="206" text-anchor="middle" font-size="13" font-weight="600" fill="#b23735">you hit</text>
+  <text x="182" y="200" text-anchor="middle" font-size="28" font-weight="700" fill="#0c7b7b">+1</text>
+  <text x="366" y="200" text-anchor="middle" font-size="28" font-weight="700" fill="#0c7b7b">+1</text>
+  <text x="274" y="292" text-anchor="middle" font-size="28" font-weight="700" fill="#0c7b7b">+1</text>
+
+  <!-- arrow across the seam -->
+  <line x1="274" y1="236" x2="274" y2="248" stroke="#e24b4a" stroke-width="3"/>
+  <polygon points="274,256 267,242 281,242" fill="#e24b4a"/>
+  <text x="298" y="246" font-size="15" font-weight="700" fill="#c5392f">chips fossil B</text>
+
+  <text x="40" y="372" font-size="18" fill="#4a3c22">Hit the seam so one swing's +1 chips <tspan font-weight="700">both</tspan> fossils.</text>
+  <text x="40" y="400" font-size="18" fill="#4a3c22">Two stacked lines: <tspan font-weight="700">6 swings together</tspan> vs 8 apart.</text>
+</svg>

@@ -5,6 +5,9 @@ An offline helper that reads the **exact** board from a running *Endless Frontie
 No build step, no AI, no pixel-guessing — it reads the game's own decrypted state through the
 runtime, so HP and fossil shapes are exact. It is **read-only**: it never sends a move to the game.
 
+> **Can't install or run it?** [**SOLVE-BY-HAND.md**](SOLVE-BY-HAND.md) distills the same strategy into a
+> by-eye method you can apply to your own board — illustrated, with worked example boards.
+
 ## Requirements
 
 - A working **EF2 Browser Runtime** install — the separate, third-party project that runs the
@@ -72,6 +75,7 @@ The mechanics it models:
 | `tests.html` | open in a browser to run the engine unit tests |
 | `bench.js` | dev-only Monte-Carlo benchmark (`node bench.js`) |
 | `BENCHMARKING.md` | benchmarking & heuristics reference |
+| `SOLVE-BY-HAND.md` | play it by eye — the solver's strategy as an illustrated human field guide |
 | `gapfind.js` / `gapfind2.js` | dev-only gap-finders — confirm no exploitable move-choice slack remains (see `BENCHMARKING.md`) |
 | `runtime-hook/` | `solver_hook.py` (the read-only observer module) + how to wire it into your runtime |
 
