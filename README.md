@@ -18,14 +18,39 @@ it never sends a move to the game.
 
 ## Setup
 
-The solver runs **inside** the runtime — there's no separate server to start. You wire it in once:
+The solver runs **inside** the runtime — there's no separate server to start. You wire it in once; no
+existing runtime files are overwritten. The foolproof, copy-paste walkthrough (with troubleshooting) is
+in [**`runtime/README.md`**](runtime/README.md) — here's the short version.
 
-1. **Add the overlay to your runtime.** Copy this repo's two modules (`solver_hook.py`,
-   `solver_overlay.py`) and three web assets (`solver.js`, `metrics.js`, `overlay.js`) into your
-   runtime, and add a few one-line calls to `handler.py`. Full copy-paste steps are in
-   [`runtime/README.md`](runtime/README.md) — no existing runtime files are overwritten.
-2. **Restart the runtime**, then open the **Fossil Excavation** minigame.
-3. The **🦴 Fossil Solver** panel appears right on the game page.
+**1. Copy the files into your runtime:**
+
+| From this repo | Into your runtime's… |
+|---|---|
+| `runtime/solver_hook.py`, `runtime/solver_overlay.py` | `scripts/runtime_server/` |
+| `solver.js`, `metrics.js`, `overlay.js` | `web/bootstrap/runtime/fossil-solver/` |
+
+**2. Add these hooks to `scripts/runtime_server/handler.py`** — additions only, nothing is removed:
+
+```python
+# a) with the other "from . import …" imports at the top:
+from . import solver_hook
+from . import solver_overlay
+
+# b) as the FIRST lines inside do_GET(self):
+if solver_hook.handle_get(self):
+    return
+
+# c) as the FIRST lines inside do_POST(self):
+if solver_hook.handle_post(self):
+    return
+
+# d) where the bootstrap page (index.html) is read into `html` before it's sent:
+html = solver_hook.inject(html)       # the read-only data hook
+html = solver_overlay.inject(html)    # the on-screen overlay
+```
+
+**3. Restart the runtime** and open the **Fossil Excavation** minigame — the **🦴 Fossil Solver** panel
+appears right on the game page.
 
 ## Using it
 
