@@ -1,0 +1,7 @@
+{
+  "id": "fossil-solver",
+  "name": "Fossil Solver",
+  "enabled": true,
+  "entry": "plugin.js",
+  "handleKey": "__EF_FOSSIL_SOLVER_HANDLE__"
+}
