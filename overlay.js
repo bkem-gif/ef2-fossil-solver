@@ -59,6 +59,7 @@
     if (panel) return;
     ensureStyle();
     panel = el("div"); panel.id = ID;
+    panel.dataset.efPluginOverlay = "fossil-solver"; // runtime hide/show hook (EF2-Browser-Runtime v0.5.2+)
     var hd = el("div"); hd.className = "hd";
     hd.appendChild(el("span", null, "🦴"));
     hd.appendChild(el("span", "flex:1", "Fossil Solver"));
