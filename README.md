@@ -5,7 +5,7 @@ A read-only, in-game helper for **Endless Frontier 2's Fossil Excavation** minig
 It reads the game's own board, so the hidden HP and fossil shapes are exact. It is **read-only**: it
 never makes a move for you.
 
-> **Don't have the runtime, or don't want to install anything?** [**SOLVE-BY-HAND.md**](SOLVE-BY-HAND.md)
+> **Don't have the runtime, or don't want to install anything?** [**SOLVE-BY-HAND.md**](docs/SOLVE-BY-HAND.md)
 > turns the same strategy into a simple by-eye method you can use yourself, with illustrated examples.
 
 ---
@@ -56,21 +56,19 @@ the fewest-swing next move right over the board. It never decrypts anything itse
 The rules it models: hitting a covered tile deals **+2** to it and **+1** to each touching covered tile, and
 a tile breaks at 0 HP; fossils are rigid 4-cell shapes (**1×4, 4×1, 2×2**) and a fossil is uncovered when all
 four of its tiles break. With a fossil's shape known it plans the minimum swings to finish it; while fossils
-are hidden it probes the most-likely tiles. See [**BENCHMARKING.md**](BENCHMARKING.md) for the strategy and
+are hidden it probes the most-likely tiles. See [**BENCHMARKING.md**](docs/BENCHMARKING.md) for the strategy and
 how it was tuned.
 
 ## What's in this folder
 
-| File | What it's for |
+| Path | What it's for |
 |------|---------------|
 | `plugin.json`, `plugin.js` | what makes it a runtime plugin (the parts the runtime needs) |
-| `solver.js` | the solver engine |
-| `overlay.js` | the on-screen panel |
-| `metrics.js` | the optional stats line |
-| `BENCHMARKING.md` | how the solver decides + benchmark results |
-| `SOLVE-BY-HAND.md` | the same strategy as a by-eye human guide |
-| `bench.js`, `gapfind.js`, `gapfind2.js`, `tests.html` | developer-only tools (you don't need these) |
-| `runtime/` | the **old** install files for the pre-plugin runtime (no longer needed; see the `main` branch) |
+| `solver.js`, `overlay.js`, `metrics.js` | the engine, the on-screen panel, and the optional stats line — loaded by the plugin |
+| `docs/` | the strategy reference (`BENCHMARKING.md`), the by-eye guide (`SOLVE-BY-HAND.md`), and their images |
+| `dev/` | developer-only tools (`bench.js`, `gapfind.js`, `gapfind2.js`, `tests.html`) — you don't need these |
+
+(The old pre-plugin install files live on the [`main`](../../tree/main) branch.)
 
 ## Attribution & license
 

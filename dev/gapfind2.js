@@ -11,7 +11,7 @@
  * Candidates are focused (the solver's move + its 8 neighbours + the top-weight
  * covered tiles) to keep the posterior rollouts tractable.
  */
-const FS = require('./solver.js');
+const FS = require('../solver.js');
 
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function genBoard(rows, cols, rng, hpC) { const b = FS.makeBoard(rows, cols, 1); for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const hp = hpC[Math.floor(rng() * hpC.length)]; b.cells[r][c] = hp === 0 ? { state: 'empty', hp: 0, dmg: 0, fossil: null } : { state: 'covered', hp, dmg: 0, fossil: null }; } return b; }

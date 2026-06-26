@@ -17,7 +17,7 @@ You aim **one swing at one covered tile**. It deals:
 - **+2** to the tile you hit, and
 - **+1** to each tile directly **up / down / left / right** of it (never diagonal).
 
-<p align="center"><img src="docs/images/hand-swing-splash.png" width="300" alt="A swing deals +2 to the tile you hit and +1 to each covered tile up, down, left and right; diagonals and any splash into a hole or off the board do nothing"></p>
+<p align="center"><img src="images/hand-swing-splash.png" width="300" alt="A swing deals +2 to the tile you hit and +1 to each covered tile up, down, left and right; diagonals and any splash into a hole or off the board do nothing"></p>
 
 **Key rules to keep in your head:**
 
@@ -53,7 +53,7 @@ You're probing blind ground, trying to nick *any* tile of *any* hidden fossil. S
 
 A tile's value ≈ **how many ways a straight 4-in-a-row (across or down) or a 2×2 block of still-covered tiles can be drawn through it.** In plain terms: *how deeply buried it is in open covered ground, measured in straight lines and blocks.* Here's the value of every tile on a fresh 8×10 board — notice it peaks dead-center and falls off toward the rim:
 
-<p align="center"><img src="docs/images/hand-where-to-probe.png" width="440" alt="Heat map of a fresh 8x10 board: each tile shows how many 4-tile fossils could still pass through it, peaking at 12 in the open middle and falling to 3 in the corners"></p>
+<p align="center"><img src="images/hand-where-to-probe.png" width="440" alt="Heat map of a fresh 8x10 board: each tile shows how many 4-tile fossils could still pass through it, peaking at 12 in the open middle and falling to 3 in the corners"></p>
 
 ### The search rule
 
@@ -92,7 +92,7 @@ The moment you nick a fossil, its whole shape appears. Now there's nothing to le
 - **Square (sq): hit a *corner of the block*.** Its +1 reaches the two adjacent siblings inside the square — which is why the 2×2 finishes faster than a line at HP2 and HP4 (the two tie at HP3).
 - **March the +2 along the shape so each tile soaks a +1 from a neighbouring swing before you tap it.** At HP ≤ 3 that means most tiles need just one direct tap. **At HP4 a line tile needs two direct +2 hits** (a single +1 soak plus one +2 is only 3 of the 4 it needs), so you'll double-tap two interior tiles — the 2×2 still finishes in 4 because its corner splashes do more sibling work. The swing-count table below is the source of truth; let it, not the aiming slogan, set your expectations.
 
-<p align="center"><img src="docs/images/hand-finish-shapes.png" width="540" alt="Finishing order for a line (hit the two inside tiles first) and a square (hit the corners); both take 4 swings at HP 3"></p>
+<p align="center"><img src="images/hand-finish-shapes.png" width="540" alt="Finishing order for a line (hit the two inside tiles first) and a square (hit the corners); both take 4 swings at HP 3"></p>
 
 **Swing counts to memorize** (per 4-tile fossil):
 
@@ -134,7 +134,7 @@ Every hit is a corner, so each splash stays inside the square and chips two sibl
 
 If **two revealed fossils touch**, don't clear one then the other. Aim hits **on their shared border** so one swing's +1 splash chips a tile of *each* fossil. Expect to save roughly one swing per shared edge. (Two stacked h4s at HP3 cost **6 swings jointly** vs **8** done separately.)
 
-<p align="center"><img src="docs/images/hand-joint-seam.png" width="460" alt="Two stacked fossils: hitting along their shared seam lets one +1 splash chip a tile of each, finishing both in 6 swings instead of 8"></p>
+<p align="center"><img src="images/hand-joint-seam.png" width="460" alt="Two stacked fossils: hitting along their shared seam lets one +1 splash chip a tile of each, finishing both in 6 swings instead of 8"></p>
 
 ### The finish-from-a-neighbour trick (a free probe)
 

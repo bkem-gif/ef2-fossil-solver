@@ -5,7 +5,7 @@
  * Models the real information: on revealing any fossil cell you see the shape,
  * so the footprint is known on first contact (completion is then exact).
  */
-const FS = require('./solver.js');
+const FS = require('../solver.js');
 
 function mulberry32(a) {
   return function () {
