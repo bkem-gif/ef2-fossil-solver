@@ -23,8 +23,8 @@ easier** to set up than the old version — **no Python files to copy, and no co
 
 ### Just three steps
 
-1. **Download this add-on.** Near the top of this page, make sure the branch button says **`plugin`**, then
-   click the green **`< > Code`** button → **Download ZIP**. Unzip the file — inside is a folder of files,
+1. **Download this add-on.** Near the top of this page, click the green **`< > Code`** button →
+   **Download ZIP**. Unzip the file — inside is a folder of files,
    including one named `plugin.json`.
 
 2. **Put the folder into your runtime.** The ZIP opens to a folder with a long automatic name (something
@@ -71,7 +71,7 @@ how it was tuned.
 | `docs/` | the strategy reference (`BENCHMARKING.md`), the by-eye guide (`SOLVE-BY-HAND.md`), and their images |
 | `dev/` | developer-only tools (`bench.js`, `gapfind.js`, `gapfind2.js`, `tests.html`) — you don't need these |
 
-(The old pre-plugin install files live on the [`main`](../../tree/main) branch.)
+(The old pre-plugin standalone version is preserved under the [`pre-plugin`](../../tree/pre-plugin) tag.)
 
 ## Attribution & license
 
