@@ -17,8 +17,9 @@ easier** to set up than the old version — **no Python files to copy, and no co
 
 > **Did you use the old version?** (Back then you copied `solver_hook.py` and `solver_overlay.py` into the
 > runtime and pasted a few lines into one of its files.) **You don't need any of that anymore.** Just update
-> your runtime to the latest version and follow the three steps below. The old files won't break anything —
-> they're simply no longer used.
+> your [EF2 Browser Runtime](https://github.com/Rokhanhh/EF2-Browser-Runtime) to the latest version (the
+> in-menu hide/show toggle needs **v0.5.2 or newer**) and follow the three steps below. The old files won't
+> break anything — they're simply no longer used.
 
 ### Just three steps
 
@@ -26,9 +27,10 @@ easier** to set up than the old version — **no Python files to copy, and no co
    click the green **`< > Code`** button → **Download ZIP**. Unzip the file — inside is a folder of files,
    including one named `plugin.json`.
 
-2. **Put the folder into your runtime.** Find your **EF2 Browser Runtime** folder, open the **`plugins`**
-   folder inside it, and drop the unzipped folder in there — **renamed to `fossil-solver`**. When you're
-   done it should look like this:
+2. **Put the folder into your runtime.** The ZIP opens to a folder with a long automatic name (something
+   like `ef2-fossil-solver-plugin`) — that's the one you'll use. Find your **EF2 Browser Runtime** folder
+   (wherever you unzipped the runtime), open the **`plugins`** folder inside it, and drop that folder in
+   there — **renamed to just `fossil-solver`**. When you're done it should look like this:
 
    ```
    …/EF2-Browser-Runtime/plugins/fossil-solver/plugin.json
@@ -45,7 +47,8 @@ easier** to set up than the old version — **no Python files to copy, and no co
 A small **draggable panel** sits over the game. It draws a mini **board**, **highlights the next tile to
 hammer** (`🔨 R# · C#`), and shows a **Fossils: X / Y uncovered** count. Hammer the highlighted tile in the
 game; the panel re-reads the board and updates — repeat until **✓ All uncovered**. Drag the panel anywhere;
-the `–` button collapses it.
+the `–` button collapses it, and you can hide or show the whole panel any time from the runtime's plugin
+menu (the **Fossil Solver** toggle — needs runtime **v0.5.2 or newer**).
 
 ## How it works
 
